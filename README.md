@@ -71,7 +71,7 @@ Si des images sont ajoutées ou retirées, les nombres d'images de chaque ensemb
 ## 3. Structure du projet
 
 ```text
-classification-documents-ia/
+projet-classification-image/
 │
 ├── raw/                              # Images originales, un sous-dossier par catégorie
 │   ├── article_scientifique/
@@ -84,6 +84,7 @@ classification-documents-ia/
 │   ├── val/                          # Images de validation (15 %)
 │   └── test/                         # Images de test (le reste)
 │
+├── requirements.txt                  # Liste des bibliothèques à installer
 ├── prepare_data_simple.py            # Répartition des images
 ├── pretraitement.py                  # Prétraitement et augmentation des images
 ├── entrainement.py                   # Entraînement du modèle
@@ -120,8 +121,8 @@ Le dossier `data/` et les fichiers marqués « généré » n'existent pas au d�
 Avec Git :
 
 ```powershell
-git clone https://github.com/TON_NOM_UTILISATEUR/classification-documents-ia.git
-cd classification-documents-ia
+git clone https://github.com/VOTRE_NOM_UTILISATEUR/projet-classification-image.git
+cd projet-classification-image
 ```
 
 Ou en téléchargeant le ZIP depuis GitHub (**Code → Download ZIP**), puis en l'extrayant.
@@ -149,14 +150,18 @@ Une fois l'environnement activé, `(.venv)` apparaît au début de la ligne de c
 ### 4.4. Installer les bibliothèques
 
 ```powershell
-uv pip install torch torchvision matplotlib scikit-learn streamlit pillow
+uv pip install -r requirements.txt
 ```
+
+Sans `uv`, avec `pip` : `pip install -r requirements.txt`.
 
 Vérifiez l'installation :
 
 ```powershell
 python -c "import torch, torchvision, matplotlib, sklearn, streamlit, PIL; print('Installation réussie !')"
 ```
+
+Les bibliothèques installées sont listées dans `requirements.txt` : `torch`, `torchvision`, `matplotlib`, `scikit-learn`, `streamlit` et `Pillow`.
 
 Pour utiliser une carte graphique (GPU), choisissez la commande d'installation adaptée sur [pytorch.org/get-started/locally](https://pytorch.org/get-started/locally/). La commande ci-dessus n'installe pas forcément la version CUDA.
 
@@ -248,7 +253,7 @@ Le script charge `modele.pt` et `classes.json`, puis prédit la catégorie des i
 
 ### 6.5. `erreur.py` : analyse des erreurs
 
-Pour chaque image de test mal classée, le script affiche le nom du fichier, la catégorie réelle, la catégorie prédite et la confiance. Les erreurs sont triées de la plus confiante à la moins confiante. Une planche de six erreurs au plus est enregistrée dans `erreurs_analyse.png`.
+Pour chaque image de test mal classée, le script affiche le nom du fichier, la catégorie réelle, la catégorie prédite et la confiance. Les erreurs sont triées de la plus confiante à la moins confiante. Une planche de six erreurs au plus est enregistrée dans `erreurs_analyse.png`. S'il y a moins de trois erreurs, le script affiche aussi les six prédictions les moins confiantes (`confiances_faibles.png`). Pour analyser la validation, lancez `python erreur.py val`.
 
 Cette étape montre quelles catégories le modèle confond et quelles images sont difficiles.
 
@@ -292,14 +297,12 @@ L'accuracy et le F1-score dépendent de l'entraînement effectué : lancez `eval
 
 | Problème | Solution |
 |---|---|
-| `ModuleNotFoundError: No module named 'torch'` | L'environnement `.venv` n'est pas activé, ou PyTorch n'y est pas installé. Activez-le, puis `uv pip install torch torchvision`. |
-| `ModuleNotFoundError` pour `streamlit`, `PIL`, `sklearn` ou `matplotlib` | `uv pip install streamlit pillow scikit-learn matplotlib` dans l'environnement activé. |
+| `ModuleNotFoundError: No module named 'torch'` | L'environnement `.venv` n'est pas activé, ou PyTorch n'y est pas installé. Activez-le, puis `uv pip install -r requirements.txt`. |
+| `ModuleNotFoundError` pour `streamlit`, `PIL`, `sklearn` ou `matplotlib` | `uv pip install -r requirements.txt` dans l'environnement activé. |
 | `modele.pt` ou `classes.json` introuvable | Lancez d'abord `python entrainement.py`, depuis la racine du projet. |
 | Le dossier `data/` est introuvable | Lancez `python prepare_data_simple.py`, et vérifiez que `raw/` contient un sous-dossier par catégorie. |
-| Erreur au téléchargement des poids pré-entraînés | Vérifiez la connexion Internet et les certificats SSL (voir la remarque ci-dessous). |
+| Erreur au téléchargement des poids pré-entraînés | Vérifiez la connexion Internet (pare-feu, proxy ou VPN peuvent bloquer le téléchargement). |
 | Streamlit ne trouve pas le modèle | Lancez Streamlit depuis la racine du projet, là où se trouvent `modele.pt` et `classes.json`. |
-
-> **Remarque de sécurité :** `entrainement.py` désactive pour l'instant la vérification des certificats SSL, pour contourner une erreur de téléchargement des poids. Cela réduit la sécurité de la connexion. Il vaut mieux corriger la configuration des certificats et garder la vérification activée.
 
 ---
 
@@ -319,7 +322,7 @@ Améliorations possibles :
 
 ## 11. Publier le projet sur GitHub
 
-1. Sur [GitHub](https://github.com/), cliquez sur **New repository**, nommez-le (par exemple `classification-documents-ia`) et **ne cochez pas** les options README, `.gitignore` ou licence, pour éviter un conflit au premier envoi.
+1. Sur [GitHub](https://github.com/), cliquez sur **New repository**, nommez-le (par exemple `projet-classification-image`) et **ne cochez pas** les options README, `.gitignore` ou licence, pour éviter un conflit au premier envoi.
 2. Vérifiez que Git est installé : `git --version` (sinon, installez-le depuis [git-scm.com](https://git-scm.com/) et redémarrez VS Code).
 3. Créez à la racine un fichier `.gitignore` :
 
@@ -330,10 +333,13 @@ venv/
 
 # Fichiers temporaires Python
 __pycache__/
-*.py[cod]
+*.pyc
 
-# Données générées (recréées par prepare_data_simple.py)
+# Fichiers générés (recréés par les scripts)
 data/
+modele.pt
+classes.json
+*.png
 
 # Paramètres locaux et fichiers système
 .vscode/
@@ -341,12 +347,14 @@ data/
 Thumbs.db
 ```
 
+> Si vous voulez publier vos résultats (modèle entraîné, courbes, matrice de confusion), retirez de ce fichier les lignes `modele.pt`, `classes.json` et `*.png`.
+
 4. Envoyez le projet :
 
 ```powershell
 git init
 git branch -M main
-git remote add origin https://github.com/TON_NOM_UTILISATEUR/classification-documents-ia.git
+git remote add origin https://github.com/VOTRE_NOM_UTILISATEUR/projet-classification-image.git
 git add .
 git commit -m "Premier envoi : classification de documents par IA"
 git push -u origin main
@@ -368,5 +376,4 @@ git push
 
 Ce mini-projet met en œuvre les étapes principales d'une application de vision par ordinateur : préparation des données, prétraitement, apprentissage par transfert, évaluation et démonstration interactive.
 
-Avec MobileNetV3-Small et Streamlit, il propose une première solution de classification automatique de documents, qui prédit la catégorie d'une image et montre les probabilités associées. Plus de données et d'expériences permettraient d'améliorer sa fiabilité.#   p r o j e t - c l a s s i f i c a t i o n  
- 
+Avec MobileNetV3-Small et Streamlit, il propose une première solution de classification automatique de documents, qui prédit la catégorie d'une image et montre les probabilités associées. Plus de données et d'expériences permettraient d'améliorer sa fiabilité.
